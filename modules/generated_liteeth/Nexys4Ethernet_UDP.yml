@@ -1,7 +1,7 @@
 #
 
 # PHY --------------------------------------------------------------------------
-phy: LiteEthPHYMII
+phy: LiteEthPHYRMII
 vendor: xilinx
 toolchain: vivado
 
