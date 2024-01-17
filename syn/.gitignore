@@ -1,0 +1,21 @@
+.Xil
+
+# generated folders
+*.cache/
+*.hbs/
+*.hw/
+*.ip_user_files/
+*.runs/
+
+# generated scripts and files
+*.tcl
+*.xpr
+
+# targets from HDLmake
+project
+par
+synthesize
+bitstream
+
+*.jou
+*.log
