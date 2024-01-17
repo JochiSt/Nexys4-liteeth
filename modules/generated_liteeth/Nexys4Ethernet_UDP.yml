@@ -13,19 +13,14 @@ ip_address: 192.168.1.50
 data_width: 8
 
 # UDP Ports --------------------------------------------------------------------
-udp_ports: {
-  "udp0": {
-        "udp_port": 2000, # Static Params.
-        "ip_address": "192.168.1.100", # Static Params.
-        "data_width": 32,
-        "tx_fifo_depth": 64,
-        "rx_fifo_depth": 64,
-      },
-  "udp1": {
-        "udp_port": 2020,
-        #"ip_address"    : , # Dynamic Params.
-        "data_width": 32,
-        "tx_fifo_depth": 64,
-        "rx_fifo_depth": 64,
-      }
-}
+tx_cdc_depth: 16
+tx_cdc_buffered: True
+rx_cdc_depth: 16
+rx_cdc_buffered: True
+
+# UDP Ports --------------------------------------------------------------------
+udp_ports:
+  streamer1:
+    data_width: 32
+    port: 1337
+    mode: streamer
