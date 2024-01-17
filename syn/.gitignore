@@ -19,3 +19,6 @@ bitstream
 
 *.jou
 *.log
+
+# ignore generated Makefile (by HDLmake)
+Makefile
