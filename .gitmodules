@@ -1,3 +1,6 @@
 [submodule "modules/liteeth"]
 	path = modules/liteeth
 	url = https://github.com/enjoy-digital/liteeth.git
+[submodule "modules/liteiclink"]
+	path = modules/liteiclink
+	url = https://github.com/enjoy-digital/liteiclink.git
