@@ -49,9 +49,8 @@ USE UNISIM.VComponents.ALL;
 
 ENTITY EthernetTest IS
     GENERIC (
-        N          : INTEGER := 22; -- divisor for debouncing circuit
-        ADDR_WIDTH : INTEGER := 10; -- RAM's address width
-        DATA_WIDTH : INTEGER := 8   -- RAM's data width (1024x1byte)
+        RESET_RELEASE_CNT : INTEGER := 10000 -- count how many clock cycles the reset should be low after startup
+
     );
     PORT (
         CLK100MHZ   : IN STD_LOGIC;
@@ -90,27 +89,33 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     ----------------------------------------------------------------------------
     -- SIGNALS
     ----------------------------------------------------------------------------
-    SIGNAL CLK50MHZ               : STD_LOGIC                     := '0';
+    SIGNAL CLK50MHZ               : STD_LOGIC                      := '0';
 
-    SIGNAL streamer1_ip_address   : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL streamer1_sink_data    : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL streamer1_sink_last    : STD_LOGIC                     := '0';
-    SIGNAL streamer1_sink_ready   : STD_LOGIC                     := '0';
-    SIGNAL streamer1_sink_valid   : STD_LOGIC                     := '0';
+    SIGNAL streamer1_ip_address   : STD_LOGIC_VECTOR(31 DOWNTO 0)  := (OTHERS => '0');
+    SIGNAL streamer1_sink_data    : STD_LOGIC_VECTOR(31 DOWNTO 0)  := (OTHERS => '0');
+    SIGNAL streamer1_sink_last    : STD_LOGIC                      := '0';
+    SIGNAL streamer1_sink_ready   : STD_LOGIC                      := '0';
+    SIGNAL streamer1_sink_valid   : STD_LOGIC                      := '0';
 
-    SIGNAL streamer1_source_data  : STD_LOGIC_VECTOR(31 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL streamer1_source_error : STD_LOGIC                     := '0';
-    SIGNAL streamer1_source_last  : STD_LOGIC                     := '0';
-    SIGNAL streamer1_source_ready : STD_LOGIC                     := '0';
-    SIGNAL streamer1_source_valid : STD_LOGIC                     := '0';
+    SIGNAL streamer1_source_data  : STD_LOGIC_VECTOR(31 DOWNTO 0)  := (OTHERS => '0');
+    SIGNAL streamer1_source_error : STD_LOGIC                      := '0';
+    SIGNAL streamer1_source_last  : STD_LOGIC                      := '0';
+    SIGNAL streamer1_source_ready : STD_LOGIC                      := '0';
+    SIGNAL streamer1_source_valid : STD_LOGIC                      := '0';
 
-    SIGNAL streamer1_udp_port     : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL streamer1_udp_port     : STD_LOGIC_VECTOR(15 DOWNTO 0)  := (OTHERS => '0');
+
+    CONSTANT fpga_mac             : STD_LOGIC_VECTOR (47 DOWNTO 0) := x"00183e01ff71"; -- FPGA's MAC address
+    CONSTANT fpga_ip              : STD_LOGIC_VECTOR (31 DOWNTO 0) := x"C0A8010C";     -- FPGA's IP4 address 192.168.1.12
 
     ----------------------------------------------------------------------------
     -- liteeth core
     ----------------------------------------------------------------------------
     COMPONENT liteeth_core IS
         PORT (
+            ip_address             : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+            mac_address            : IN STD_LOGIC_VECTOR(47 DOWNTO 0);
+
             rmii_clocks_ref_clk    : IN STD_LOGIC;
             rmii_crs_dv            : IN STD_LOGIC;
             rmii_mdc               : OUT STD_LOGIC;
@@ -136,6 +141,8 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     END COMPONENT;
     ----------------------------------------------------------------------------
 
+    SIGNAL reset_cnt : INTEGER RANGE 0 TO RESET_RELEASE_CNT + 1 := 0; -- counter for releasing the reset signal
+    SIGNAL sys_reset : STD_LOGIC                                := '1';
 BEGIN
 
     liteeth_core_0 : liteeth_core
@@ -164,8 +171,11 @@ BEGIN
 
         streamer1_udp_port     => streamer1_udp_port,
 
+        ip_address             => fpga_ip,
+        mac_address            => fpga_mac,
+
         sys_clock              => CLK100MHZ,
-        sys_reset              => btnCpuReset
+        sys_reset              => sys_reset
     );
 
     RMII_clk : PROCESS (CLK100MHZ) BEGIN
@@ -174,4 +184,17 @@ BEGIN
         END IF;
     END PROCESS;
 
+    PhyClk50Mhz <= CLK50MHZ;
+
+    proc_reset : PROCESS (clk100MHz) BEGIN
+        IF rising_edge(clk100MHz) THEN
+            IF sys_reset = '1' THEN
+                IF reset_cnt < RESET_RELEASE_CNT THEN
+                    reset_cnt <= reset_cnt + 1;
+                ELSE
+                    sys_reset <= '0';
+                END IF;
+            END IF;
+        END IF;
+    END PROCESS proc_reset;
 END Behavioral;
