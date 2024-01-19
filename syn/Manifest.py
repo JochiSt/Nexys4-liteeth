@@ -1,5 +1,5 @@
-action="synthesis"
-target="xilinx"
+action = "synthesis"
+target = "xilinx"
 
 incl_makefiles = [
     "MakeProg.mk",
@@ -18,7 +18,8 @@ syn_project = "EthernetTest"
 syn_tool = "vivado"
 
 # when done with bitstream generation, remove jou and log files from vivado
-syn_post_bitstream_cmd = "rm -rf *.jou *.log"
+syn_pre_bitstream_cmd = "rm -rf *.jou *.log"
+syn_post_bitstream_cmd = "rm -rf *.jou"
 
 syn_properties = [
     #["steps.synth_design.args.more options", "-verbose"],
@@ -48,7 +49,7 @@ syn_properties = [
 
 # modules, which needed to be included
 modules = {
-    "local" : [
+    "local": [
         "../modules/generated_liteeth",
     ],
 }
