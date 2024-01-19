@@ -50,7 +50,7 @@ syn_properties = [
 # modules, which needed to be included
 modules = {
     "local": [
-        "../modules/generated_liteeth",
+        "../modules/Ethernet",
     ],
 }
 
