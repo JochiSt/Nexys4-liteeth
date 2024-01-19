@@ -3,6 +3,7 @@ target = "xilinx"
 
 incl_makefiles = [
     "MakeProg.mk",
+    "MakeResetResults.mk",
 ]
 
 # FPGA on the Nexys4 Board
