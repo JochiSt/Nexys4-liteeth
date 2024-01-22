@@ -10,19 +10,20 @@ clk_freq: 100e6
 core: udp
 #mac_address: 0x10e2d5000000  # configurable via HDL
 #ip_address: 192.168.1.50     # configurable via HDL
-data_width: 8
+data_width: 32
+port: 1024
 
 # UDP Ports --------------------------------------------------------------------
-tx_cdc_depth: 16
-tx_cdc_buffered: True
-rx_cdc_depth: 16
-rx_cdc_buffered: True
+#tx_cdc_depth: 4
+#tx_cdc_buffered: True
+#rx_cdc_depth: 4
+#rx_cdc_buffered: True
 
 # UDP Ports --------------------------------------------------------------------
 udp_ports:
   streamer1:
-    mode: streamer
-    port: 1337
-    tx_fifo_depth: 16
-    rx_fifo_depth: 16
-    data_width: 32
+    mode: raw
+    port: 1024
+    tx_fifo_depth: 1
+    rx_fifo_depth: 1
+    data_width: 16
