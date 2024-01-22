@@ -38,7 +38,7 @@ BEGIN
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
-                leds             <= (OTHERS => '0');
+                leds(1 DOWNTO 0) <= (OTHERS => '0');
                 udp_source_ready <= '0';
                 udp_state        <= STATE_WAIT_PACKET;
             ELSE
@@ -63,6 +63,9 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
+
+    leds(15) <= udp_source_valid;
+    leds(14) <= udp_source_last;
 
     led <= leds;
 
