@@ -8,10 +8,9 @@ toolchain: vivado
 # Core -------------------------------------------------------------------------
 clk_freq: 100e6
 core: udp
-#mac_address: 0x10e2d5000000  # configurable via HDL
-#ip_address: 192.168.1.50     # configurable via HDL
+mac_address: 0x10e2d5000000  # configurable via HDL
+ip_address: 192.168.1.12     # configurable via HDL
 data_width: 32
-port: 1024
 
 # UDP Ports --------------------------------------------------------------------
 #tx_cdc_depth: 4
@@ -23,7 +22,6 @@ port: 1024
 udp_ports:
   streamer1:
     mode: raw
-    port: 1024
     tx_fifo_depth: 1
     rx_fifo_depth: 1
     data_width: 16
