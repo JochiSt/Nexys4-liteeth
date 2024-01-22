@@ -22,3 +22,7 @@ bitstream
 
 # ignore generated Makefile (by HDLmake)
 Makefile
+
+*.cf
+*.o
+ghdl/
