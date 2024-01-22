@@ -20,7 +20,7 @@ syn_project = "EthernetTest"
 syn_tool = "vivado"
 
 # when done with bitstream generation, remove jou and log files from vivado
-syn_pre_synthesis_cmd = "rm -rf *.jou *.log"
+syn_pre_synthesis_cmd = "rm -rf *.jou *.log *.backup.log"
 syn_post_bitstream_cmd = "rm -rf *.jou"
 
 syn_properties = [
