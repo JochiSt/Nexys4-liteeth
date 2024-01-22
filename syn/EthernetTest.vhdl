@@ -81,8 +81,8 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     ----------------------------------------------------------------------------
     COMPONENT liteeth_core IS
         PORT (
-            ip_address                  : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-            mac_address                 : IN STD_LOGIC_VECTOR (47 DOWNTO 0);
+            --ip_address                  : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+            --mac_address                 : IN STD_LOGIC_VECTOR (47 DOWNTO 0);
 
             rmii_clocks_ref_clk         : IN STD_LOGIC;
             rmii_crs_dv                 : IN STD_LOGIC;
@@ -184,8 +184,8 @@ BEGIN
         streamer1_source_valid      => streamer1_source_valid,
 
         -- configuration of IP and MAC
-        ip_address                  => fpga_ip,
-        mac_address                 => fpga_mac,
+        --ip_address                  => fpga_ip,
+        --mac_address                 => fpga_mac,
 
         -- system clock and the system reset
         sys_clock                   => CLK100MHZ,
