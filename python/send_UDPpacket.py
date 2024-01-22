@@ -6,7 +6,7 @@ import time
 
 # Set the target IP address and port
 target_ip = '192.168.1.12'
-target_port = 255
+target_port = 1024
 
 UDP_RX = False
 
