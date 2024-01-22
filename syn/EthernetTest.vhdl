@@ -1,51 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: The Hong Kong Polytechnic University
--- Engineer: Alexandr Melnikov
---
--- Create Date:    16:19:30 02/20/2017
--- Design Name:
--- Module Name:    ethernet_transceiver - Behavioral
--- Project Name:
--- Target Devices:
--- Tool versions:
--- Description:
---
--- Dependencies:
---
--- Revision:
--- Revision 0.01 - File Created
-
--- UDP echo-server design uses on-board Ethernet port to create a data-link between FPGA board
--- Nexys 4 DDR and MatLAB. Echo-server is capable of reception and transmission data packets
--- using ARP and UDP protocols.
--- MAC address of FPGA board: 00:18:3e:01:ff:71
--- IP4 address of FPGA board: 192.168.1.10
--- Port number used in the design: 58210
--- The echo server will reply back to any data server, which uses correct IP4 address and Port number.
--- MAC address of the board is made discoverable for the data server via ARP protocol
--- This Echo-server design doesn't use any input or output FIFO's as elesticity buffers,
--- both in- and outgoing data packets are parsed/assembled in parallel with Rx/Tx processes,
--- which allows better resource utilisation at the price of more complex design architecture.
-
--- Additional Comments:
--- Transceiver block is the Top-level block of the Ethernet transceiver design, implementing
--- the VHDL UDP echo-server.
--- Transceiver block itself handles the Power-On Reset operation along with subsequent Hardware Resets
--- on request from the user.
--- Apart from that it incorporates lower-level modules handling different functions required for the echo-server
--- operations: Receiver, Transmitter, Serial Management Interface, Memory and Clock Modules
-----------------------------------------------------------------------------------
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
-USE IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx primitives in this code.
-LIBRARY UNISIM;
-USE UNISIM.VComponents.ALL;
+USE IEEE.NUMERIC_STD.ALL; -- signed / unsigned
 
 ENTITY EthernetTest IS
     GENERIC (
@@ -115,12 +70,12 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     SIGNAL streamer1_source_last       : STD_LOGIC                                := '0';
     SIGNAL streamer1_source_last_be    : STD_LOGIC_VECTOR (1 DOWNTO 0)            := (OTHERS => '0');
     SIGNAL streamer1_source_length     : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_ready      : STD_LOGIC                                := '0';
+    SIGNAL streamer1_source_ready      : STD_LOGIC                                := '1';
     SIGNAL streamer1_source_src_port   : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
     SIGNAL streamer1_source_valid      : STD_LOGIC                                := '0';
 
-    CONSTANT fpga_mac                  : STD_LOGIC_VECTOR (47 DOWNTO 0)           := x"00183e01ff71"; -- FPGA's MAC address
-    CONSTANT fpga_ip                   : STD_LOGIC_VECTOR (31 DOWNTO 0)           := x"C0A8010C";     -- FPGA's IP4 address 192.168.1.12
+    CONSTANT fpga_mac                  : STD_LOGIC_VECTOR (47 DOWNTO 0)           := x"00_18_3e_01_ff_71"; -- FPGA's MAC address
+    CONSTANT fpga_ip                   : STD_LOGIC_VECTOR (31 DOWNTO 0)           := x"C0_A8_01_0C";       -- FPGA's IP4 address 192.168.1.12
     ----------------------------------------------------------------------------
     -- liteeth core
     ----------------------------------------------------------------------------
@@ -163,6 +118,30 @@ ARCHITECTURE Behavioral OF EthernetTest IS
             sys_reset                   : IN STD_LOGIC
         );
     END COMPONENT; -- liteeth_core
+
+    COMPONENT readEthernetPacket IS
+        GENERIC (
+            PORT_MSB : NATURAL := 102
+        );
+        PORT (
+            clk                   : IN STD_LOGIC;
+            reset                 : IN STD_LOGIC;
+
+            udp_source_valid      : IN STD_LOGIC;
+            udp_source_last       : IN STD_LOGIC;
+            udp_source_ready      : OUT STD_LOGIC;
+
+            udp_source_src_port   : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            udp_source_dst_port   : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            udp_source_ip_address : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+            udp_source_length     : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            udp_source_data       : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+
+            udp_source_error      : IN STD_LOGIC;
+            led                   : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+        );
+    END COMPONENT;
     ----------------------------------------------------------------------------
 
 BEGIN
@@ -213,6 +192,30 @@ BEGIN
         sys_reset                   => sys_reset
     );
 
+    readEthernetPacket_0 : readEthernetPacket
+    GENERIC MAP(
+        PORT_MSB => 102
+    )
+    PORT MAP(
+        clk                   => CLK100MHZ,
+        reset                 => sys_reset,
+
+        udp_source_valid      => streamer1_source_valid,
+        udp_source_last       => streamer1_source_last,
+        udp_source_ready      => streamer1_source_ready,
+
+        udp_source_src_port   => streamer1_source_src_port,
+        udp_source_dst_port   => streamer1_source_dst_port,
+        udp_source_ip_address => streamer1_source_ip_address,
+
+        udp_source_length     => streamer1_source_length,
+        udp_source_data       => streamer1_source_data,
+
+        udp_source_error      => streamer1_source_error,
+
+        led => led
+    );
+
     RGB1_Blue  <= streamer1_sink_valid;
     RGB1_Green <= streamer1_sink_ready;
 
@@ -220,7 +223,7 @@ BEGIN
     RGB2_Green <= streamer1_source_ready;
     RGB2_Red   <= streamer1_source_error;
 
-    led <= streamer1_source_dst_port;
+    --led        <= streamer1_source_dst_port;
 
     -- generate the 50MHz clock needed for the PHY
     RMII_clk : PROCESS (CLK100MHZ) BEGIN

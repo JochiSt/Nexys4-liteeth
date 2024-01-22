@@ -21,4 +21,6 @@ print("#"*80, file=sys.stderr)
 files = [
     "build/gateware/liteeth_core.v",
     "build/gateware/liteeth_core.xdc",
+
+    "readEthernetPacket.vhdl",
 ]
