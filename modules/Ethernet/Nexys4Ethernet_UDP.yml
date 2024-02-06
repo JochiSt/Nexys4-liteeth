@@ -1,4 +1,3 @@
-#
 
 # PHY --------------------------------------------------------------------------
 phy: LiteEthPHYRMII
@@ -6,7 +5,7 @@ vendor: xilinx
 toolchain: vivado
 
 # Core -------------------------------------------------------------------------
-clk_freq: 100e6
+clk_freq: 125e6
 core: udp
 mac_address: 0x10e2d5000000  # configurable via HDL
 ip_address: 192.168.1.12     # configurable via HDL

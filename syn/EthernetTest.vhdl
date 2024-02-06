@@ -41,6 +41,7 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     -- CLOCKS
     ----------------------------------------------------------------------------
     SIGNAL CLK50MHZ                    : STD_LOGIC                                := '0';
+    SIGNAL CLK125MHz                   : STD_LOGIC                                := '0';
 
     ----------------------------------------------------------------------------
     -- RESET
@@ -119,6 +120,15 @@ ARCHITECTURE Behavioral OF EthernetTest IS
         );
     END COMPONENT; -- liteeth_core
 
+    COMPONENT Ethernet_PLL IS
+        PORT (
+            CLK100MHz : IN STD_LOGIC;
+
+            CLK125MHz : OUT STD_LOGIC;
+            CLK50MHz  : OUT STD_LOGIC
+        );
+    END COMPONENT;
+
     COMPONENT readEthernetPacket IS
         GENERIC (
             PORT_MSB : NATURAL := 102
@@ -188,7 +198,7 @@ BEGIN
         --mac_address                 => fpga_mac,
 
         -- system clock and the system reset
-        sys_clock                   => CLK100MHZ,
+        sys_clock                   => CLK200MHZ,
         sys_reset                   => sys_reset
     );
 
@@ -213,7 +223,7 @@ BEGIN
 
         udp_source_error      => streamer1_source_error,
 
-        led => led
+        led                   => led
     );
 
     RGB1_Blue  <= streamer1_sink_valid;
@@ -225,12 +235,16 @@ BEGIN
 
     --led        <= streamer1_source_dst_port;
 
-    -- generate the 50MHz clock needed for the PHY
-    RMII_clk : PROCESS (CLK100MHZ) BEGIN
-        IF rising_edge(CLK100MHZ) THEN
-            CLK50MHZ <= NOT CLK50MHZ;
-        END IF;
-    END PROCESS;
+    -- generate  50 MHz clock needed for the PHY
+    -- generate 200 MHz for the liteeth
+    Ethernet_PLL_0 : Ethernet_PLL
+    PORT MAP(
+        CLK100MHz => CLK100MHZ,
+
+        CLK125MHz => CLK125MHz,
+        CLK50MHz  => CLK50MHZ
+    );
+
     -- forward the 50MHz clock to the PHY
     PhyClk50Mhz <= CLK50MHZ;
 

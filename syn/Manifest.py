@@ -53,6 +53,7 @@ syn_properties = [
 modules = {
     "local": [
         "../modules/Ethernet",
+        "../modules/PLL",
     ],
 }
 
