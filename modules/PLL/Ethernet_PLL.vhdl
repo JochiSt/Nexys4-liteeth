@@ -64,7 +64,7 @@ BEGIN
     )
     PORT MAP(
         -- Clock Outputs: 1-bit (each) output: User configurable clock outputs
-        CLKOUT0  => CLK200MHz,    -- 1-bit output: CLKOUT0
+        CLKOUT0  => CLK125MHz,    -- 1-bit output: CLKOUT0
         CLKOUT1  => CLK50MHz,     -- 1-bit output: CLKOUT1
         CLKOUT2  => OPEN,         -- 1-bit output: CLKOUT2
         CLKOUT3  => OPEN,         -- 1-bit output: CLKOUT3
