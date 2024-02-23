@@ -198,7 +198,7 @@ BEGIN
         --mac_address                 => fpga_mac,
 
         -- system clock and the system reset
-        sys_clock                   => CLK200MHZ,
+        sys_clock                   => CLK125MHz,
         sys_reset                   => sys_reset
     );
 
@@ -207,7 +207,7 @@ BEGIN
         PORT_MSB => 102
     )
     PORT MAP(
-        clk                   => CLK100MHZ,
+        clk                   => CLK125MHz,
         reset                 => sys_reset,
 
         udp_source_valid      => streamer1_source_valid,
