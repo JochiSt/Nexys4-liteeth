@@ -40,83 +40,80 @@ ARCHITECTURE Behavioral OF EthernetTest IS
     ----------------------------------------------------------------------------
     -- CLOCKS
     ----------------------------------------------------------------------------
-    SIGNAL CLK50MHZ                    : STD_LOGIC                                := '0';
-    SIGNAL CLK125MHz                   : STD_LOGIC                                := '0';
+    SIGNAL CLK50MHZ              : STD_LOGIC                                     := '0';
+    SIGNAL CLK125MHz             : STD_LOGIC                                     := '0';
 
     ----------------------------------------------------------------------------
     -- RESET
     ----------------------------------------------------------------------------
-    SIGNAL reset_cnt                   : INTEGER RANGE 0 TO RESET_RELEASE_CNT + 1 := 0; -- counter for releasing the reset signal
-    SIGNAL sys_reset                   : STD_LOGIC                                := '1';
+    SIGNAL reset_cnt             : INTEGER RANGE 0 TO RESET_RELEASE_CNT + 1      := 0; -- counter for releasing the reset signal
+    SIGNAL sys_reset             : STD_LOGIC                                     := '1';
 
     ----------------------------------------------------------------------------
     -- SIGNALS
     ----------------------------------------------------------------------------
+    CONSTANT ETH_DATA_WIDTH      : INTEGER                                       := 32;
     -- signals for FPGA -> PC
-    SIGNAL streamer1_sink_data         : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_sink_dst_port     : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_sink_ip_address   : STD_LOGIC_VECTOR (31 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_sink_last         : STD_LOGIC                                := '0';
-    SIGNAL streamer1_sink_last_be      : STD_LOGIC_VECTOR (1 DOWNTO 0)            := (OTHERS => '0');
-    SIGNAL streamer1_sink_length       : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_sink_ready        : STD_LOGIC                                := '0';
-    SIGNAL streamer1_sink_src_port     : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_sink_valid        : STD_LOGIC                                := '0';
+    SIGNAL udp_sink_data         : STD_LOGIC_VECTOR(ETH_DATA_WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL udp_sink_dst_port     : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_sink_ip_address   : STD_LOGIC_VECTOR(31 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_sink_last         : STD_LOGIC                                     := '0';
+    SIGNAL udp_sink_last_be      : STD_LOGIC_VECTOR(3 DOWNTO 0)                  := (OTHERS => '0');
+    SIGNAL udp_sink_length       : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_sink_ready        : STD_LOGIC                                     := '0';
+    SIGNAL udp_sink_src_port     : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_sink_valid        : STD_LOGIC                                     := '0';
 
-    -- signals for PC -> FPGA
-    SIGNAL streamer1_source_data       : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_dst_port   : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_error      : STD_LOGIC                                := '0';
-    SIGNAL streamer1_source_ip_address : STD_LOGIC_VECTOR (31 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_last       : STD_LOGIC                                := '0';
-    SIGNAL streamer1_source_last_be    : STD_LOGIC_VECTOR (1 DOWNTO 0)            := (OTHERS => '0');
-    SIGNAL streamer1_source_length     : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_ready      : STD_LOGIC                                := '1';
-    SIGNAL streamer1_source_src_port   : STD_LOGIC_VECTOR (15 DOWNTO 0)           := (OTHERS => '0');
-    SIGNAL streamer1_source_valid      : STD_LOGIC                                := '0';
+    SIGNAL udp_source_data       : STD_LOGIC_VECTOR(ETH_DATA_WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL udp_source_dst_port   : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_source_error      : STD_LOGIC                                     := '0';
+    SIGNAL udp_source_ip_address : STD_LOGIC_VECTOR(31 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_source_last       : STD_LOGIC                                     := '0';
+    SIGNAL udp_source_last_be    : STD_LOGIC_VECTOR(3 DOWNTO 0)                  := (OTHERS => '0');
+    SIGNAL udp_source_length     : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_source_ready      : STD_LOGIC                                     := '0';
+    SIGNAL udp_source_src_port   : STD_LOGIC_VECTOR(15 DOWNTO 0)                 := (OTHERS => '0');
+    SIGNAL udp_source_valid      : STD_LOGIC                                     := '0';
 
-    CONSTANT fpga_mac                  : STD_LOGIC_VECTOR (47 DOWNTO 0)           := x"00_18_3e_01_ff_71"; -- FPGA's MAC address
-    CONSTANT fpga_ip                   : STD_LOGIC_VECTOR (31 DOWNTO 0)           := x"C0_A8_01_0C";       -- FPGA's IP4 address 192.168.1.12
+    CONSTANT fpga_mac            : STD_LOGIC_VECTOR (47 DOWNTO 0)                := x"00_18_3e_01_ff_71"; -- FPGA's MAC address
+    CONSTANT fpga_ip             : STD_LOGIC_VECTOR (31 DOWNTO 0)                := x"C0_A8_01_0C";       -- FPGA's IP4 address 192.168.1.12
     ----------------------------------------------------------------------------
     -- liteeth core
     ----------------------------------------------------------------------------
     COMPONENT liteeth_core IS
         PORT (
-            --ip_address                  : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-            --mac_address                 : IN STD_LOGIC_VECTOR (47 DOWNTO 0);
+            rmii_clocks_ref_clk   : IN STD_LOGIC;
+            rmii_crs_dv           : IN STD_LOGIC;
+            rmii_mdc              : OUT STD_LOGIC;
+            rmii_mdio             : INOUT STD_LOGIC;
+            rmii_rst_n            : OUT STD_LOGIC;
+            rmii_rx_data          : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+            rmii_tx_data          : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
+            rmii_tx_en            : OUT STD_LOGIC;
 
-            rmii_clocks_ref_clk         : IN STD_LOGIC;
-            rmii_crs_dv                 : IN STD_LOGIC;
-            rmii_mdc                    : OUT STD_LOGIC;
-            rmii_mdio                   : INOUT STD_LOGIC;
-            rmii_rst_n                  : OUT STD_LOGIC;
-            rmii_rx_data                : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-            rmii_tx_data                : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-            rmii_tx_en                  : OUT STD_LOGIC;
+            sys_clock             : IN STD_LOGIC;
+            sys_reset             : IN STD_LOGIC;
 
-            streamer1_sink_data         : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_sink_dst_port     : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_sink_ip_address   : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
-            streamer1_sink_last         : IN STD_LOGIC;
-            streamer1_sink_last_be      : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-            streamer1_sink_length       : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_sink_ready        : OUT STD_LOGIC;
-            streamer1_sink_src_port     : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_sink_valid        : IN STD_LOGIC;
+            udp_sink_data         : IN STD_LOGIC_VECTOR (ETH_DATA_WIDTH - 1 DOWNTO 0);
+            udp_sink_dst_port     : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_sink_ip_address   : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+            udp_sink_last         : IN STD_LOGIC;
+            udp_sink_last_be      : IN STD_LOGIC_VECTOR (3 DOWNTO 0);
+            udp_sink_length       : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_sink_ready        : OUT STD_LOGIC;
+            udp_sink_src_port     : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_sink_valid        : IN STD_LOGIC;
 
-            streamer1_source_data       : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_source_dst_port   : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_source_error      : OUT STD_LOGIC;
-            streamer1_source_ip_address : OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
-            streamer1_source_last       : OUT STD_LOGIC;
-            streamer1_source_last_be    : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
-            streamer1_source_length     : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_source_ready      : IN STD_LOGIC;
-            streamer1_source_src_port   : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
-            streamer1_source_valid      : OUT STD_LOGIC;
-
-            sys_clock                   : IN STD_LOGIC;
-            sys_reset                   : IN STD_LOGIC
+            udp_source_data       : OUT STD_LOGIC_VECTOR (ETH_DATA_WIDTH - 1 DOWNTO 0);
+            udp_source_dst_port   : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_source_error      : OUT STD_LOGIC;
+            udp_source_ip_address : OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
+            udp_source_last       : OUT STD_LOGIC;
+            udp_source_last_be    : OUT STD_LOGIC_VECTOR (3 DOWNTO 0);
+            udp_source_length     : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_source_ready      : IN STD_LOGIC;
+            udp_source_src_port   : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
+            udp_source_valid      : OUT STD_LOGIC
         );
     END COMPONENT; -- liteeth_core
 
@@ -131,7 +128,8 @@ ARCHITECTURE Behavioral OF EthernetTest IS
 
     COMPONENT readEthernetPacket IS
         GENERIC (
-            PORT_MSB : NATURAL := 102
+            PORT_MSB   : NATURAL := 102;
+            DATA_WIDTH : NATURAL := 16
         );
         PORT (
             clk                   : IN STD_LOGIC;
@@ -146,92 +144,93 @@ ARCHITECTURE Behavioral OF EthernetTest IS
             udp_source_ip_address : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
 
             udp_source_length     : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-            udp_source_data       : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+            udp_source_data       : IN STD_LOGIC_VECTOR(ETH_DATA_WIDTH - 1 DOWNTO 0);
 
             udp_source_error      : IN STD_LOGIC;
             led                   : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
         );
     END COMPONENT;
-    ----------------------------------------------------------------------------
 
+    SIGNAL ETH_CLK : STD_LOGIC := '0';
+    ----------------------------------------------------------------------------
 BEGIN
+
+    ----------------------------------------------------------------------------
+    -- select the master clock for all Ethernet things
+    ETH_CLK <= CLK100MHz;
+    -- ETH_CLK <= CLK125MHz;
+    ----------------------------------------------------------------------------
 
     liteeth_core_0 : liteeth_core
     PORT MAP(
         -- reference clock of the PHY
-        rmii_clocks_ref_clk         => CLK50MHZ,
+        rmii_clocks_ref_clk   => CLK50MHZ,
 
         -- RMII interface to the PHY
-        rmii_crs_dv                 => PhyCrs,
-        rmii_mdc                    => PhyMdc,
-        rmii_mdio                   => PhyMdio,
-        rmii_rst_n                  => PhyRstn,
-        rmii_rx_data                => PhyRxd,
-        rmii_tx_data                => PhyTxd,
-        rmii_tx_en                  => PhyTxEn,
+        rmii_crs_dv           => PhyCrs,
+        rmii_mdc              => PhyMdc,
+        rmii_mdio             => PhyMdio,
+        rmii_rst_n            => PhyRstn,
+        rmii_rx_data          => PhyRxd,
+        rmii_tx_data          => PhyTxd,
+        rmii_tx_en            => PhyTxEn,
 
-        -- FPGA to PC interface
-        streamer1_sink_data         => streamer1_sink_data,
-        streamer1_sink_dst_port     => streamer1_sink_dst_port,
-        streamer1_sink_ip_address   => streamer1_sink_ip_address,
-        streamer1_sink_last         => streamer1_sink_last,
-        streamer1_sink_last_be      => streamer1_sink_last_be,
-        streamer1_sink_length       => streamer1_sink_length,
-        streamer1_sink_ready        => streamer1_sink_ready,
-        streamer1_sink_src_port     => streamer1_sink_src_port,
-        streamer1_sink_valid        => streamer1_sink_valid,
+        sys_clock             => ETH_CLK,
+        sys_reset             => sys_reset,
 
-        -- PC to FPGA interface
-        streamer1_source_data       => streamer1_source_data,
-        streamer1_source_dst_port   => streamer1_source_dst_port,
-        streamer1_source_error      => streamer1_source_error,
-        streamer1_source_ip_address => streamer1_source_ip_address,
-        streamer1_source_last       => streamer1_source_last,
-        streamer1_source_last_be    => streamer1_source_last_be,
-        streamer1_source_length     => streamer1_source_length,
-        streamer1_source_ready      => streamer1_source_ready,
-        streamer1_source_src_port   => streamer1_source_src_port,
-        streamer1_source_valid      => streamer1_source_valid,
+        udp_sink_data         => udp_sink_data,
+        udp_sink_dst_port     => udp_sink_dst_port,
+        udp_sink_ip_address   => udp_sink_ip_address,
+        udp_sink_last         => udp_sink_last,
+        udp_sink_last_be      => udp_sink_last_be,
+        udp_sink_length       => udp_sink_length,
+        udp_sink_ready        => udp_sink_ready,
+        udp_sink_src_port     => udp_sink_src_port,
+        udp_sink_valid        => udp_sink_valid,
 
-        -- configuration of IP and MAC
-        --ip_address                  => fpga_ip,
-        --mac_address                 => fpga_mac,
-
-        -- system clock and the system reset
-        sys_clock                   => CLK125MHz,
-        sys_reset                   => sys_reset
+        udp_source_data       => udp_source_data,
+        udp_source_dst_port   => udp_source_dst_port,
+        udp_source_error      => udp_source_error,
+        udp_source_ip_address => udp_source_ip_address,
+        udp_source_last       => udp_source_last,
+        udp_source_last_be    => udp_source_last_be,
+        udp_source_length     => udp_source_length,
+        udp_source_ready      => udp_source_ready,
+        udp_source_src_port   => udp_source_src_port,
+        udp_source_valid      => udp_source_valid
     );
 
     readEthernetPacket_0 : readEthernetPacket
     GENERIC MAP(
-        PORT_MSB => 102
+        PORT_MSB   => 102,
+        DATA_WIDTH => ETH_DATA_WIDTH
     )
     PORT MAP(
-        clk                   => CLK125MHz,
+        clk                   => ETH_CLK,
         reset                 => sys_reset,
 
-        udp_source_valid      => streamer1_source_valid,
-        udp_source_last       => streamer1_source_last,
-        udp_source_ready      => streamer1_source_ready,
+        udp_source_valid      => udp_source_valid,
+        udp_source_last       => udp_source_last,
+        udp_source_ready      => udp_source_ready,
 
-        udp_source_src_port   => streamer1_source_src_port,
-        udp_source_dst_port   => streamer1_source_dst_port,
-        udp_source_ip_address => streamer1_source_ip_address,
+        udp_source_src_port   => udp_source_src_port,
+        udp_source_dst_port   => udp_source_dst_port,
+        udp_source_ip_address => udp_source_ip_address,
 
-        udp_source_length     => streamer1_source_length,
-        udp_source_data       => streamer1_source_data,
+        udp_source_length     => udp_source_length,
+        udp_source_data       => udp_source_data,
 
-        udp_source_error      => streamer1_source_error,
+        udp_source_error      => udp_source_error,
 
         led                   => led
     );
 
-    RGB1_Blue  <= streamer1_sink_valid;
-    RGB1_Green <= streamer1_sink_ready;
+    --RGB1_Blue  <= streamer1_sink_valid;
+    --RGB1_Green <= streamer1_sink_ready;
 
-    RGB2_Blue  <= streamer1_source_valid;
-    RGB2_Green <= streamer1_source_ready;
-    RGB2_Red   <= streamer1_source_error;
+    RGB2_Blue  <= udp_source_valid;
+    RGB2_Green <= udp_source_ready;
+    RGB2_Red   <= udp_source_error;
 
     --led        <= streamer1_source_dst_port;
 
