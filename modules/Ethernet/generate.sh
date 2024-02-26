@@ -9,4 +9,6 @@ rm -rf build/software
 rm -rf build/gateware/*.sh
 rm -rf build/gateware/*.tcl
 
-# remove all lines starting with set_property
+# convert verilog to VHDL header for instantiation
+python ../../utils/pyVHDLinstTemplate/pyVHDLinstTemplate.py build/gateware/liteeth_core.v
+
