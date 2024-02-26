@@ -6,7 +6,7 @@ import time
 
 # Set the target IP address and port
 target_ip = '192.168.1.12'
-target_port = 1024
+target_port = 14000
 
 UDP_RX = False
 
@@ -48,13 +48,19 @@ counter = 0
 # send UDP messages
 while not stop_thread:
 
-    msg_bytes = bytearray()
-    msg_bytes.append(counter)
+    for target_port in range(1024,15000):
+        msg_bytes = bytearray()
+        msg_bytes.append(counter)
 
-    sock.sendto(msg_bytes, (target_ip, target_port))
-    if counter > 999:
-        counter = 0
-    time.sleep(.001)
+        print("%10d"%(target_port))
+
+        sock.sendto(msg_bytes, (target_ip, target_port))
+        if counter > 999:
+            counter = 0
+        time.sleep(.001)
+
+        if stop_thread:
+            break
 
 if UDP_RX:
     # Wait for the receive thread to finish
