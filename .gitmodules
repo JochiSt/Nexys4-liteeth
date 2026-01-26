@@ -1,3 +1,6 @@
 [submodule "utils/pyVHDLinstTemplate"]
 	path = utils/pyVHDLinstTemplate
 	url = https://github.com/JochiSt/pyVHDLinstTemplate.git
+[submodule "python/cocotbext/cocotbext-eth"]
+	path = python/cocotbext/cocotbext-eth
+	url = https://github.com/svancau/cocotbext-eth.git
