@@ -10,5 +10,5 @@ rm -rf build/gateware/*.sh
 rm -rf build/gateware/*.tcl
 
 # convert verilog to VHDL header for instantiation
-python ../../utils/pyVHDLinstTemplate/pyVHDLinstTemplate.py build/gateware/liteeth_core.v
+python3 ../../utils/pyVHDLinstTemplate/pyVHDLinstTemplate.py build/gateware/liteeth_core.v
 
