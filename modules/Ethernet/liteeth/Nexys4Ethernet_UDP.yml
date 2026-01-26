@@ -7,26 +7,18 @@ toolchain: vivado
 # Core -------------------------------------------------------------------------
 clk_freq: 100e6
 core: udp
-mac_address: 0x10e2d5000000  # configurable via HDL
-ip_address: 192.168.1.12     # configurable via HDL
+mac_address: 0x10e2d5000000
+ip_address: 192.168.1.12
 data_width: 32
 
-# UDP Ports --------------------------------------------------------------------
-#tx_cdc_depth: 4
-#tx_cdc_buffered: True
-#rx_cdc_depth: 4
-#rx_cdc_buffered: True
-
-# UDP Ports --------------------------------------------------------------------
-#udp_ports:
-#  streamer1:
-#    mode: raw
-#    tx_fifo_depth: 1
-#    rx_fifo_depth: 1
-#    data_width: 16
-
-udp_ports:
-  udp:
-    data_width: 32
-    udp_port: 14000
-    mode: raw
+# UDP --------------------------------------------------------------------------
+udp_ports:   {
+  "udp0": {
+    "with_broadcast": False,
+    "udp_port": 2000,
+    "ip_address"    : "192.168.1.20",
+    "data_width"    : 8,
+    "tx_fifo_depth" : 64,
+    "rx_fifo_depth" : 64,
+  },
+}

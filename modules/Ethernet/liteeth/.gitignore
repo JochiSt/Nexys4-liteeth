@@ -1,1 +1,3 @@
 build
+liteeth_*
+build_liteeth_core.sh
