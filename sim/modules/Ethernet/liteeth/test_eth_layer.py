@@ -42,14 +42,26 @@ async def list_signals(dut):
 async def test_arp_reply(dut):
 
     # generate needed clocks
-    clock_100MHz = Clock(dut.sys_clock, round(1/100e6*1e9,3), units="ns")    # 100 MHz
+    clock_100MHz = Clock(dut.sys_clock, round(1/100e6*1e9,3), unit="ns")    # 100 MHz
 
     # connect RMII to (virtual) Ethernet PHY
     RMII_CLK_WIRE = dut.rmii_clocks_ref_clk
     RMII_CRS_DV_WIRE = dut.rmii_crs_dv
     RMII_TX_EN_WIRE = dut.rmii_tx_en
 
-    eth_rst = dut.rmii_rst_n
+    # set initial values
+    dut.rmii_rst_n.value = 1   # de-assert reset
+
+    ############################################################################
+    # wait some time
+    #cocotb.log.info("Waiting some ns ...")
+    #Timer(10, "ns")   # wait some time
+    #cocotb.log.info("... done")
+
+    ############################################################################
+    # RMII PHY signals
+    cocotb.log.info("Init RMII PHY ...")
+    eth_rst = None #dut.rmii_rst_n
     eth_rx_err = None
 
     # initiate RMII PHY
@@ -64,17 +76,36 @@ async def test_arp_reply(dut):
         speed=100e6
         )
 
-    ############################################################################
+    cocotb.log.info("... done")
 
     ############################################################################
     # Start the clock. Start it low to avoid issues on the first RisingEdge
-    cocotb.start_soon(clock_100MHz.start(start_high=False))
+    cocotb.log.info("Starting clock ...")
+    await cocotb.start_soon(clock_100MHz.start(start_high=False))
+    cocotb.log.info("... done")
 
     ############################################################################
+    # wait some time
+    cocotb.log.info("Waiting some clock cycles ...")
+    for N in range(10):
+        cocotb.log.info("  waiting cycle %d ..."%(N))
+        await RisingEdge(dut.sys_clock)
+        cocotb.log.info("  ... done")
+    cocotb.log.info("... done")
+
+    ############################################################################
+    # reset the DUT and everything else
+    cocotb.log.info("Asserting reset ...")
+
+    dut.rmii_rst_n.value = 0   # assert reset
 
     # reset the module, wait 2 rising edges until we release reset
-    for _ in range(2):
+    for _ in range(10):
         await RisingEdge(dut.sys_clock)
+
+    dut.rmii_rst_n.value = 1   # de-assert reset
+
+    cocotb.log.info("... released reset")
 
     ############################################################################
     # scapy -> cocotb
@@ -125,8 +156,9 @@ from pathlib import Path
 
 def test_eth_layer_runner():
     # get environment variable or default
-    #sim = os.getenv("SIM", "verilator")
-    sim = os.getenv("SIM", "icarus")
+    sim = os.getenv("SIM", "verilator")    # uses verilator
+    #sim = os.getenv("SIM", "ghdl")    # uses ghdl
+    #sim = os.getenv("SIM", "icarus")    # uses iverilog
 
     # get path to this file
     proj_path = Path(__file__).resolve().parent
@@ -147,13 +179,6 @@ def test_eth_layer_runner():
         MODULES_FOLDER / "modules" / "Ethernet" / "liteeth" / "liteeth_core.v",
     ]
 
-    print(sources)
-
-    ############################################################################
-    # define VHDL sources
-    sources += [
-    ]
-
     ############################################################################
     # build the runner
     runner = get_runner(sim)
@@ -169,8 +194,15 @@ def test_eth_layer_runner():
         #    ],
 
         # for icarus/verilator
+        #build_args=[
+        #    "-s","glbl",    # add glbl as additional top level for Xilinx designs
+        #    ],
+
+        # for verilator
         build_args=[
-            "-s","glbl",
+        #    "--top-module","glbl",  # add glbl as additional top level for Xilinx designs
+            "--bbox-unsup",         # disable warnings about unsupported constructs
+            "--timing",             # timing
             ],
         hdl_toplevel="liteeth_core",
         always=True,   # build always?
