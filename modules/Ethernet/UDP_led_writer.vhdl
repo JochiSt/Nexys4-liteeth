@@ -13,11 +13,11 @@ ENTITY UDP_led_writer IS
         reset_n : IN STD_LOGIC;
 
         -- data from liteeth UDP core
-        udp0_source_valid : IN STD_LOGIC;
-        udp0_source_last  : IN STD_LOGIC;
-        udp0_source_ready : OUT STD_LOGIC;
-        udp0_source_data  : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-        udp0_source_error : IN STD_LOGIC;
+        udp_source_valid : IN STD_LOGIC;
+        udp_source_last  : IN STD_LOGIC;
+        udp_source_ready : OUT STD_LOGIC;
+        udp_source_data  : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+        udp_source_error : IN STD_LOGIC;
 
         -- output to the LEDs
         leds : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
@@ -43,22 +43,22 @@ BEGIN
                 -- handle data
                 CASE UDP_state IS
                     WHEN STATE_WAIT_PACKET =>
-                        udp0_source_ready <= '1'; -- signal ready to receive data
-                        IF (udp0_source_valid = '1') THEN
-                            IF (udp0_source_last = '0') THEN -- force at least 2 bytes
-                                data(15 DOWNTO 8) <= udp0_source_data;
+                        udp_source_ready <= '1'; -- signal ready to receive data
+                        IF (udp_source_valid = '1') THEN
+                            IF (udp_source_last = '0') THEN -- force at least 2 bytes
+                                data(15 DOWNTO 8) <= udp_source_data;
                                 UDP_state         <= STATE_READ_DATA;
                             END IF;
                         END IF;
 
                     WHEN STATE_READ_DATA =>
-                        IF (udp0_source_valid = '1') THEN
-                            data(7 DOWNTO 0) <= udp0_source_data;
+                        IF (udp_source_valid = '1') THEN
+                            data(7 DOWNTO 0) <= udp_source_data;
                             UDP_state        <= STATE_READ_DATA;
                         END IF;
 
-                        IF (udp0_source_last = '1') THEN -- if only 2 bytes, last will be high here
-                            udp0_source_ready <= '0';        -- stop receiving data
+                        IF (udp_source_last = '1') THEN -- if only 2 bytes, last will be high here
+                            udp_source_ready <= '0';        -- stop receiving data
                             UDP_state         <= STATE_WAIT_PACKET;
                         END IF;
                 END CASE;
