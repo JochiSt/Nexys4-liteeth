@@ -33,7 +33,7 @@ BEGIN
 
     PROCESS (clk) BEGIN
 
-        IF risign_edge(clk) THEN
+        IF rising_edge(clk) THEN
             -- RESET
             IF (reset_n = '0') THEN
                 udp_source_ready <= '0';
