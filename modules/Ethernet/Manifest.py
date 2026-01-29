@@ -1,3 +1,4 @@
 files = [
-    "UDP_led_writer.vhdl",
+    "SW_to_UDP.vhdl",
+    "UDP_to_LED.vhdl",
 ]
