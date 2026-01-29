@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL; -- signed / unsigned
 
-ENTITY EthernetTest IS
+ENTITY UDP2LED IS
     GENERIC (
         RESET_RELEASE_CNT : INTEGER := 10000 -- count how many clock cycles the reset should be low after startup
 
@@ -34,9 +34,9 @@ ENTITY EthernetTest IS
         LED         : OUT STD_LOGIC_VECTOR (15 DOWNTO 0);
         sw          : IN STD_LOGIC_VECTOR (15 DOWNTO 0)
     );
-END EthernetTest;
+END UDP2LED;
 
-ARCHITECTURE Behavioral OF EthernetTest IS
+ARCHITECTURE Behavioral OF UDP2LED IS
     ----------------------------------------------------------------------------
     -- CLOCKS
     ----------------------------------------------------------------------------
