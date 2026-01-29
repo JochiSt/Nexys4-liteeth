@@ -7,8 +7,9 @@ import time
 # Set the target IP address and port
 target_ip = '192.168.1.12'
 target_port = 2000
+sleep_time = .001   # time to sleep between to TX packets
 
-UDP_RX = False
+UDP_RX = True
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,13 +22,14 @@ stop_thread = False
 # Function to receive UDP packets
 def receive_packets():
     global stop_thread
-    sock.settimeout(1)
+    sock.settimeout(10)
     while not stop_thread:
         try:
             data, server_address = sock.recvfrom(1024)
             response = data.decode('utf-8')
-            print(time.time(), response)
+            print(time.time(), server_address, response, data)
         except TimeoutError:
+            print("... timeout")
             pass
 
 # Function to handle CTRL-C
@@ -49,7 +51,7 @@ counter = 0
 while not stop_thread:
     msg_bytes = bytearray([counter, 0xFF])
 
-    print(msg_bytes)
+    #print(msg_bytes)
 
     sock.sendto(msg_bytes, (target_ip, target_port))
     counter += 1
@@ -57,7 +59,7 @@ while not stop_thread:
     if counter > 0xFF:
         counter = 0
 
-    time.sleep(.1)
+    time.sleep(sleep_time)
 
     if stop_thread:
         break
