@@ -77,8 +77,8 @@ ARCHITECTURE Behavioral OF UDP2LED IS
             sys_clock : IN STD_LOGIC;
             sys_reset : IN STD_LOGIC;
 
-            udp0_ip_address      : IN     STD_LOGIC_VECTOR (31 downto 0);
-            udp0_udp_port        : IN     STD_LOGIC_VECTOR (15 downto 0);
+            udp0_ip_address : IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+            udp0_udp_port   : IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 
             udp0_sink_data  : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
             udp0_sink_last  : IN STD_LOGIC;
@@ -101,7 +101,7 @@ ARCHITECTURE Behavioral OF UDP2LED IS
 
     -- FPGA to PHY (sending)
     SIGNAL udp0_ip_address : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"C0_A8_01_04"; -- ip address, we are sending our packets to
-    SIGNAL udp0_udp_port   : STD_LOGIC_VECTOR(15 DOWNTO 0) := x"07d0";         -- port 2000
+    SIGNAL udp0_udp_port   : STD_LOGIC_VECTOR(15 DOWNTO 0) := x"07d0";        -- port 2000
 
     SIGNAL udp0_sink_data  : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
     SIGNAL udp0_sink_last  : STD_LOGIC                    := '0';
@@ -216,13 +216,13 @@ BEGIN
             leds => led
         );
 
-        SW2UDP_inst : ENTITY work.SW_to_UDP
+    SW2UDP_inst : ENTITY work.SW_to_UDP
         PORT MAP(
-            clk            => CLK100MHZ,
-            reset_n        => reset_n,
+            clk     => CLK100MHZ,
+            reset_n => reset_n,
 
-            switches      => sw,
-            trigger       => trigger_clk_1kHz,
+            switches => sw,
+            trigger  => trigger_clk_1kHz,
 
             TDATA_TXD  => udp0_sink_data,
             TREADY_TXD => udp0_sink_ready,
