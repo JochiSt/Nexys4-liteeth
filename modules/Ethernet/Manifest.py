@@ -1,3 +1,3 @@
 files = [
-    "readEthernetPacket.vhdl",
+    "UDP_led_writer.vhdl",
 ]
