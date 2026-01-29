@@ -212,7 +212,8 @@ BEGIN
             -- output to the LEDs
             leds => led
         );
-
+    ----------------------------------------------------------------------------
+    -- Switches to UDP sender instantiation
     SW2UDP_inst : ENTITY work.SW_to_UDP
         PORT MAP(
             clk     => CLK100MHZ,
