@@ -5,7 +5,6 @@ USE IEEE.NUMERIC_STD.ALL; -- signed / unsigned
 ENTITY UDP2LED IS
     GENERIC (
         RESET_RELEASE_CNT : INTEGER := 10000 -- count how many clock cycles the reset should be low after startup
-
     );
     PORT (
         CLK100MHZ : IN STD_LOGIC;
@@ -59,7 +58,6 @@ ARCHITECTURE Behavioral OF UDP2LED IS
         );
     END COMPONENT;
 
-    SIGNAL CLK125MHz : STD_LOGIC := '0';
     ----------------------------------------------------------------------------
     -- liteeth core (from instatiation template)
     ----------------------------------------------------------------------------
@@ -124,12 +122,11 @@ BEGIN
     ----------------------------------------------------------------------------
     -- clock
     -- generate  50 MHz clock needed for the PHY
-    -- generate 200 MHz for the liteeth
     Ethernet_PLL_0 : Ethernet_PLL
     PORT MAP(
         CLK100MHz => CLK100MHZ,
 
-        CLK125MHz => CLK125MHz,
+        CLK125MHz => OPEN,
         CLK50MHz  => CLK50MHZ
     );
     -- forward the 50MHz clock to the PHY
