@@ -6,6 +6,7 @@
 *.hw/
 *.ip_user_files/
 *.runs/
+*.srcs/
 
 # generated scripts and files
 *.tcl
