@@ -77,6 +77,9 @@ ARCHITECTURE Behavioral OF UDP2LED IS
             sys_clock : IN STD_LOGIC;
             sys_reset : IN STD_LOGIC;
 
+            udp0_ip_address      : IN     STD_LOGIC_VECTOR (31 downto 0);
+            udp0_udp_port        : IN     STD_LOGIC_VECTOR (15 downto 0);
+
             udp0_sink_data  : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
             udp0_sink_last  : IN STD_LOGIC;
             udp0_sink_ready : OUT STD_LOGIC;
@@ -97,6 +100,9 @@ ARCHITECTURE Behavioral OF UDP2LED IS
     SIGNAL sys_reset : STD_LOGIC := '0';
 
     -- FPGA to PHY (sending)
+    SIGNAL udp0_ip_address : STD_LOGIC_VECTOR(31 DOWNTO 0) := x"C0_A8_01_04"; -- ip address, we are sending our packets to
+    SIGNAL udp0_udp_port   : STD_LOGIC_VECTOR(15 DOWNTO 0) := x"07d0";         -- port 2000
+
     SIGNAL udp0_sink_data  : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
     SIGNAL udp0_sink_last  : STD_LOGIC                    := '0';
     SIGNAL udp0_sink_ready : STD_LOGIC                    := '0';
@@ -109,6 +115,10 @@ ARCHITECTURE Behavioral OF UDP2LED IS
     SIGNAL udp0_source_ready : STD_LOGIC                    := '0';
     SIGNAL udp0_source_valid : STD_LOGIC                    := '0';
 
+    ----------------------------------------------------------------------------
+    -- UDP TX trigger
+    SIGNAL trigger_clk_1kHz : STD_LOGIC                     := '0';
+    SIGNAL trigger_clk_cnt  : INTEGER RANGE 0 TO 50_000_000 := 0;
 BEGIN
 
     ----------------------------------------------------------------------------
@@ -125,6 +135,18 @@ BEGIN
     -- forward the 50MHz clock to the PHY
     PhyClk50Mhz <= CLK50MHZ;
     sys_clock   <= CLK100MHZ;
+
+    --generate a slow about 1kHz clock for triggering the UDP messages TX
+    trigger_clk : PROCESS (CLK100MHZ) BEGIN
+        IF rising_edge(CLK100MHZ) THEN
+            IF trigger_clk_cnt < 50_000_000 THEN
+                trigger_clk_cnt <= trigger_clk_cnt + 1;
+            ELSE
+                trigger_clk_cnt  <= 0;
+                trigger_clk_1kHz <= NOT trigger_clk_1kHz;
+            END IF;
+        END IF;
+    END PROCESS trigger_clk;
 
     ----------------------------------------------------------------------------
     -- RESET
@@ -161,6 +183,8 @@ BEGIN
         sys_clock => sys_clock,
         sys_reset => sys_reset,
 
+        udp0_ip_address => udp0_ip_address,
+        udp0_udp_port   => udp0_udp_port,
         udp0_sink_data  => udp0_sink_data,
         udp0_sink_last  => udp0_sink_last,
         udp0_sink_ready => udp0_sink_ready,
@@ -175,7 +199,7 @@ BEGIN
 
     ----------------------------------------------------------------------------
     -- UDP to LED writer instantiation
-    UDP2LED_inst : ENTITY work.UDP_led_writer
+    UDP2LED_inst : ENTITY work.UDP_to_LED
         PORT MAP(
             -- system clock and reset
             clk     => CLK100MHZ,
@@ -190,5 +214,19 @@ BEGIN
 
             -- output to the LEDs
             leds => led
+        );
+
+        SW2UDP_inst : ENTITY work.SW_to_UDP
+        PORT MAP(
+            clk            => CLK100MHZ,
+            reset_n        => reset_n,
+
+            switches      => sw,
+            trigger       => trigger_clk_1kHz,
+
+            TDATA_TXD  => udp0_sink_data,
+            TREADY_TXD => udp0_sink_ready,
+            TVALID_TXD => udp0_sink_valid,
+            TLAST_TXD  => udp0_sink_last
         );
 END Behavioral;
