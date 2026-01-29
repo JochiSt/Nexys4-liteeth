@@ -1,3 +1,3 @@
 files = [
-    "Nexys-3-Master.xdc"
+    "Nexys-4-Master.xdc"
 ]
