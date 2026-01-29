@@ -1,1 +1,1 @@
-../modules/Ethernet/build/gateware/liteeth_core.vhdl
+../../modules/Ethernet/liteeth/build/gateware/liteeth_core.vhdl
