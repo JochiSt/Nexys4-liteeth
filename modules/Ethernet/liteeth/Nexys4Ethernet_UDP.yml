@@ -9,7 +9,7 @@ clk_freq: 100e6
 core: udp
 mac_address: 0x10e2d5000000
 ip_address: 192.168.1.12
-data_width: 32
+data_width: 8
 
 # UDP --------------------------------------------------------------------------
 udp_ports:   {
@@ -18,7 +18,7 @@ udp_ports:   {
     "udp_port": 2000,
     "ip_address"    : "192.168.1.20",
     "data_width"    : 8,
-    "tx_fifo_depth" : 64,
-    "rx_fifo_depth" : 64,
+    "tx_fifo_depth" : 8,
+    "rx_fifo_depth" : 8,
   },
 }
