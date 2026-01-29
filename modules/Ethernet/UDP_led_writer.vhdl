@@ -10,7 +10,7 @@ ENTITY UDP_led_writer IS
     PORT (
         -- system clock and reset
         clk   : IN STD_LOGIC;
-        reset : IN STD_LOGIC;
+        reset_n : IN STD_LOGIC;
 
         -- data from liteeth UDP core
         udp0_source_valid : IN STD_LOGIC;
@@ -35,8 +35,8 @@ BEGIN
 
         IF risign_edge(clk) THEN
             -- RESET
-            IF (reset) THEN
-                udp0_source_ready <= '0';
+            IF (reset_n = '0') THEN
+                udp_source_ready <= '0';
                 UDP_state         <= STATE_WAIT_PACKET;
                 data              <= (OTHERS => '0');
             ELSE
