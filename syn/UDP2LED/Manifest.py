@@ -1,20 +1,14 @@
 action = "synthesis"
 target = "xilinx"
 
-incl_makefiles = [
-    "MakeProg.mk",
-    "MakeGHDLana.mk",
-    "MakeResetResults.mk",
-]
-
 # FPGA on the Nexys4 Board
 syn_device = "xc7a100t"
 syn_grade = "-1"
 syn_package = "csg324"
 
 # set project name and top module
-syn_top = "EthernetTest"
-syn_project = "EthernetTest"
+syn_top = "UDP2LED"
+syn_project = "UDP2LED"
 
 # use VIVADO as synthesis tool
 syn_tool = "vivado"
@@ -22,6 +16,8 @@ syn_tool = "vivado"
 # when done with bitstream generation, remove jou and log files from vivado
 syn_pre_synthesis_cmd = "rm -rf *.jou *.log *.backup.log"
 syn_post_bitstream_cmd = "rm -rf *.jou"
+
+################################################################################
 
 syn_properties = [
     #["steps.synth_design.args.more options", "-verbose"],
@@ -49,16 +45,28 @@ syn_properties = [
     ["steps.write_bitstream.args.verbose", "0"],
     ]
 
+################################################################################
+# additional Makefiles
+
+incl_makefiles = [
+    "MakeProg.mk",
+    "MakeGHDLana.mk",
+    "MakeResetResults.mk",
+]
+
+################################################################################
+
 # modules, which needed to be included
 modules = {
     "local": [
-        "../modules/Ethernet",
-        "../modules/PLL",
+        "../../constraints",
+        "../../modules/Ethernet",
+        "../../modules/Ethernet/liteeth",
+        "../../modules/PLL",
     ],
 }
 
 # local files needed for synthesis
 files = [
-    "EthernetTest.vhdl",
-    "Nexys-4-Master.xdc"
+    "UDP2LED.vhdl",
     ]
