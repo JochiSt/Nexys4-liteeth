@@ -1,0 +1,1 @@
+../../modules/Ethernet/liteeth/liteeth_core.vhdl
