@@ -49,9 +49,9 @@ syn_properties = [
 # additional Makefiles
 
 incl_makefiles = [
-    "MakeProg.mk",
-    "MakeGHDLana.mk",
-    "MakeResetResults.mk",
+    "../MakeProg.mk",
+    "../MakeGHDLana.mk",
+    "../MakeResetResults.mk",
 ]
 
 ################################################################################
