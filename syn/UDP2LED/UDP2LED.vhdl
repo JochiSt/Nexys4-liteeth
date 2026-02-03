@@ -136,11 +136,13 @@ BEGIN
     -- generate a slow about 1kHz clock for triggering the UDP messages TX
     trigger_clk : PROCESS (CLK100MHZ) BEGIN
         IF rising_edge(CLK100MHZ) THEN
-            IF trigger_clk_cnt < 50_000 THEN
-                trigger_clk_cnt <= trigger_clk_cnt + 1;
-            ELSE
-                trigger_clk_cnt  <= 0;
-                trigger_clk_1kHz <= NOT trigger_clk_1kHz;
+            IF sw(0) = '1' THEN
+                IF trigger_clk_cnt < 50_000 THEN
+                    trigger_clk_cnt <= trigger_clk_cnt + 1;
+                ELSE
+                    trigger_clk_cnt  <= 0;
+                    trigger_clk_1kHz <= NOT trigger_clk_1kHz;
+                END IF;
             END IF;
         END IF;
     END PROCESS trigger_clk;
