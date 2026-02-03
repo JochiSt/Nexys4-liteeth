@@ -7,7 +7,7 @@ import time
 # Set the target IP address and port
 target_ip = '192.168.1.12'
 target_port = 2000
-sleep_time = .001   # time to sleep between to TX packets
+sleep_time = 1   # time to sleep between to TX packets
 
 UDP_RX = True
 
@@ -49,14 +49,14 @@ if UDP_RX:
 counter = 0
 # send UDP messages
 while not stop_thread:
-    msg_bytes = bytearray([counter, 0xFF])
+    msg_bytes = bytearray([ (counter & 0xFF00) >> 8, counter & 0xFF])
 
     #print(msg_bytes)
 
     sock.sendto(msg_bytes, (target_ip, target_port))
     counter += 1
 
-    if counter > 0xFF:
+    if counter > 0xFFFF:
         counter = 0
 
     time.sleep(sleep_time)
